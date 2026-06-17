@@ -5,7 +5,7 @@
 // 3. Thay thế giá trị RENDER_APP_URL ở dưới bằng URL của bạn.
 // 4. Chạy lệnh: node test_render.js
 
-const RENDER_APP_URL = "https://your-service-name.onrender.com"; // <-- THAY THẾ LINK RENDER CỦA BẠN TẠI ĐÂY
+const RENDER_APP_URL = "https://gcp-document-processor.onrender.com"; // <-- THAY THẾ LINK RENDER CỦA BẠN TẠI ĐÂY
 
 const API_URL = RENDER_APP_URL.endsWith('/') ? RENDER_APP_URL : RENDER_APP_URL + '/';
 const METADATA_URL = API_URL + 'metadata';

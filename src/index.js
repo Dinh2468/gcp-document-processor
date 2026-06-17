@@ -5,6 +5,9 @@ const path = require('path');
 const app = express();
 app.use(express.json());
 
+// Phục vụ giao diện Dashboard tĩnh từ thư mục public
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Nhận diện chế độ chạy: "cloud" (Google Cloud thật) hoặc "local" (Giả lập cục bộ)
 const ENV_MODE = (process.env.ENV_MODE || 'cloud').toLowerCase();
 const PORT = process.env.PORT || 8080;

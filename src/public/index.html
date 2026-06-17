@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Processor Dashboard</title>
+  <!-- Nhập font chữ Outfit từ Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-color: #6366f1;
+      --accent-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --neon-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem;
+      overflow-x: hidden;
+    }
+
+    /* Đèn neon trang trí nền */
+    .glow-orb {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.15);
+      filter: blur(80px);
+      z-index: -1;
+      pointer-events: none;
+    }
+    .glow-1 { top: 10%; left: 10%; }
+    .glow-2 { bottom: 10%; right: 10%; }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      z-index: 10;
+      position: relative;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo-section h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #a5b4fc, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.25rem;
+    }
+
+    .logo-section p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--success-color);
+      box-shadow: 0 0 10px var(--success-color);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      padding: 1.5rem;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: var(--neon-shadow);
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Filters section */
+    .controls-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      padding: 1.5rem;
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .search-wrapper, .filter-wrapper {
+      flex: 1;
+      min-width: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .controls-card label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .controls-card input, .controls-card select {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .controls-card input:focus, .controls-card select:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Table Container */
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.4);
+      padding: 1.25rem 1.5rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    td {
+      padding: 1.25rem 1.5rem;
+      font-size: 0.95rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-main);
+    }
+
+    /* Pill Badges */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+
+    .badge-tag {
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      margin-right: 0.35rem;
+      margin-bottom: 0.25rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .badge-tag:hover {
+      background: var(--accent-gradient);
+      color: var(--text-main);
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+    }
+
+    .no-data {
+      padding: 3rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 25px;
+      height: 25px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: var(--accent-color);
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .controls-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Trang trí nền -->
+  <div class="glow-orb glow-1"></div>
+  <div class="glow-orb glow-2"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo-section">
+        <h1>Bảng Điều Khiển Xử Lý Tài Liệu</h1>
+        <p>Hệ thống trích xuất siêu dữ liệu và nhãn tệp tự động</p>
+      </div>
+      <div class="status-badge">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Đang tải trạng thái...</span>
+      </div>
+    </header>
+
+    <!-- Thống kê Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Tổng số tài liệu</div>
+        <div class="stat-value" id="stat-total-docs">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tổng số từ xử lý</div>
+        <div class="stat-value" id="stat-total-words">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Số nhãn phân loại</div>
+        <div class="stat-value" id="stat-total-tags">0</div>
+      </div>
+    </div>
+
+    <!-- Bộ lọc tìm kiếm -->
+    <div class="controls-card">
+      <div class="search-wrapper">
+        <label for="search-input">Tìm kiếm theo tên tệp</label>
+        <input type="text" id="search-input" placeholder="Nhập tên tệp cần tìm...">
+      </div>
+      <div class="filter-wrapper">
+        <label for="tag-select">Lọc theo thẻ nhãn (Tag)</label>
+        <select id="tag-select">
+          <option value="all">Tất cả các thẻ</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Bảng hiển thị danh sách -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table id="metadata-table">
+          <thead>
+            <tr>
+              <th>Tên tệp tin</th>
+              <th>Ngày tạo</th>
+              <th>Kích thước</th>
+              <th>Số từ</th>
+              <th>Thẻ phân loại</th>
+              <th>Thời gian xử lý</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr>
+              <td colspan="6" class="no-data">
+                <span class="loading-spinner"></span> Đang tải dữ liệu từ máy chủ...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Toàn bộ dữ liệu siêu dữ liệu lưu trữ cục bộ để phục vụ bộ lọc client-side
+    let allMetadata = [];
+    
+    // Hàm khởi tạo và tải dữ liệu từ API
+    async function loadData() {
+      try {
+        const response = await fetch('/metadata');
+        if (!response.ok) {
+          throw new Error(`Lỗi tải dữ liệu (${response.status})`);
+        }
+        allMetadata = await response.json();
+        
+        // Cập nhật trạng thái kết nối
+        document.getElementById('status-text').innerText = allMetadata.length > 0 && allMetadata[0].mode === 'cloud' 
+          ? "Đang kết nối GCP BigQuery" 
+          : "Đang chạy chế độ Giả lập (Local)";
+        
+        // Render dữ liệu
+        renderStats(allMetadata);
+        populateTagFilter(allMetadata);
+        filterAndRenderTable();
+        
+      } catch (error) {
+        console.error("Lỗi:", error);
+        document.getElementById('status-dot').style.backgroundColor = '#ef4444';
+        document.getElementById('status-dot').style.boxShadow = '0 0 10px #ef4444';
+        document.getElementById('status-text').innerText = "Mất kết nối máy chủ";
+        
+        document.getElementById('table-body').innerHTML = `
+          <tr>
+            <td colspan="6" class="no-data" style="color: #ef4444;">
+              Không thể tải dữ liệu từ máy chủ. Vui lòng kiểm tra lại dịch vụ Node.js.
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    // Tính toán và render các thẻ chỉ số thống kê
+    function renderStats(data) {
+      document.getElementById('stat-total-docs').innerText = data.length;
+      
+      const totalWords = data.reduce((sum, item) => sum + item.word_count, 0);
+      document.getElementById('stat-total-words').innerText = totalWords.toLocaleString();
+      
+      const uniqueTags = new Set();
+      data.forEach(item => {
+        if (Array.isArray(item.tags)) {
+          item.tags.forEach(t => uniqueTags.add(t));
+        }
+      });
+      document.getElementById('stat-total-tags').innerText = uniqueTags.size;
+    }
+
+    // Thêm danh sách thẻ nhãn độc nhất vào dropdown lọc
+    function populateTagFilter(data) {
+      const tagSelect = document.getElementById('tag-select');
+      const uniqueTags = new Set();
+      
+      data.forEach(item => {
+        if (Array.isArray(item.tags)) {
+          item.tags.forEach(t => uniqueTags.add(t));
+        }
+      });
+      
+      // Xóa các option cũ ngoại trừ option mặc định "Tất cả"
+      tagSelect.innerHTML = '<option value="all">Tất cả các thẻ</option>';
+      
+      // Thêm các tag mới
+      Array.from(uniqueTags).sort().forEach(tag => {
+        const option = document.createElement('option');
+        option.value = tag;
+        option.innerText = tag.charAt(0).toUpperCase() + tag.slice(1);
+        tagSelect.appendChild(option);
+      });
+    }
+
+    // Định dạng ngày hiển thị đẹp hơn
+    function formatDate(dateString) {
+      if (!dateString) return "-";
+      const date = new Date(dateString);
+      return date.toLocaleString('vi-VN', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    }
+
+    // Định dạng kích thước tệp tin
+    function formatBytes(bytes) {
+      if (bytes === 0 || !bytes) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // Lọc và render bảng dữ liệu dựa trên input người dùng
+    function filterAndRenderTable() {
+      const searchQuery = document.getElementById('search-input').value.toLowerCase();
+      const selectedTag = document.getElementById('tag-select').value;
+      const tbody = document.getElementById('table-body');
+      
+      // Lọc dữ liệu
+      const filteredData = allMetadata.filter(item => {
+        const matchesSearch = item.filename.toLowerCase().includes(searchQuery);
+        const matchesTag = selectedTag === 'all' || (Array.isArray(item.tags) && item.tags.includes(selectedTag));
+        return matchesSearch && matchesTag;
+      });
+      
+      // Kiểm tra rỗng
+      if (filteredData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="no-data">Không tìm thấy tài liệu phù hợp.</td>
+          </tr>
+        `;
+        return;
+      }
+      
+      // Render từng dòng
+      tbody.innerHTML = '';
+      filteredData.forEach(item => {
+        const tr = document.createElement('tr');
+        
+        // Cột Tên tệp
+        const tdName = document.createElement('td');
+        tdName.style.fontWeight = '500';
+        tdName.innerText = item.filename;
+        tr.appendChild(tdName);
+        
+        // Cột Ngày tạo
+        const tdDate = document.createElement('td');
+        tdDate.innerText = formatDate(item.date);
+        tr.appendChild(tdDate);
+        
+        // Cột Kích thước
+        const tdSize = document.createElement('td');
+        tdSize.innerText = formatBytes(item.file_size);
+        tr.appendChild(tdSize);
+        
+        // Cột Số từ
+        const tdWords = document.createElement('td');
+        tdWords.innerText = item.word_count.toLocaleString();
+        tr.appendChild(tdWords);
+        
+        // Cột Thẻ phân loại (Badge tags)
+        const tdTags = document.createElement('td');
+        if (Array.isArray(item.tags)) {
+          item.tags.forEach(tag => {
+            const span = document.createElement('span');
+            span.className = 'badge badge-tag';
+            span.innerText = tag;
+            // Bấm vào badge tag sẽ tự động lọc theo tag đó
+            span.onclick = () => {
+              document.getElementById('tag-select').value = tag;
+              filterAndRenderTable();
+            };
+            tdTags.appendChild(span);
+          });
+        }
+        tr.appendChild(tdTags);
+        
+        // Cột Thời gian xử lý
+        const tdProc = document.createElement('td');
+        tdProc.innerText = formatDate(item.processing_time);
+        tr.appendChild(tdProc);
+        
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Đăng ký sự kiện thay đổi bộ lọc
+    document.getElementById('search-input').addEventListener('input', filterAndRenderTable);
+    document.getElementById('tag-select').addEventListener('change', filterAndRenderTable);
+
+    // Tự động tải dữ liệu ban đầu
+    loadData();
+  </script>
+</body>
+</html>
