@@ -1,0 +1,1 @@
+Tài liệu báo cáo tiến độ dự án Event-Driven Serverless trên Google Cloud. Hợp đồng triển khai đã hoàn tất.
